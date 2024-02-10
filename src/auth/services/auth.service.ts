@@ -1,19 +1,19 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { ConfigType } from '@nestjs/config';
 
 import { UsersService } from 'src/users/services/users.service';
 import { User } from 'src/users/entities/user.entity';
 import { PayloadToken } from '../models/token.model';
-import config from 'src/config';
 import { CreateUserDto } from 'src/users/dto/user.dto';
+import { ProducerService } from 'src/kafka/services/producer.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UsersService,
     private jwtService: JwtService,
+    private readonly producerService: ProducerService,
   ) {}
 
   async signUp(payload: CreateUserDto) {
@@ -22,9 +22,17 @@ export class AuthService {
 
       if (!newUser) throw new NotFoundException(`Cannot sign up User`);
 
-      /** TODO
+      /**
        * Send verify email confirmation
        */
+      await this.producerService.produce({
+        topic: 'verify-email',
+        messages: [
+          {
+            value: newUser.email,
+          },
+        ],
+      });
 
       return {
         success: true,

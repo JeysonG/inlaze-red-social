@@ -16,6 +16,8 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { KafkaModule } from './kafka/kafka.module';
+import { FakeMSConsumer } from './fakeMS.consumer';
 
 @Module({
   imports: [
@@ -38,8 +40,9 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    KafkaModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, FakeMSConsumer],
 })
 export class AppModule {}
