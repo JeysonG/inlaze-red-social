@@ -1,18 +1,19 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 
 import { UsersService } from 'src/users/services/users.service';
 import { User } from 'src/users/entities/user.entity';
-import { PayloadToken } from '../models/token.model';
 import { CreateUserDto } from 'src/users/dto/user.dto';
-import { ClientKafka } from '@nestjs/microservices';
+import { PayloadToken } from '../models/token.model';
+import { VERIFY_EMAIL_QUEUE } from '../constants';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @Inject('VERIFY_EMAIL_SERVICE')
-    private readonly verifyEmailClient: ClientKafka,
+    @InjectQueue(VERIFY_EMAIL_QUEUE) private readonly verifyEmailQueue: Queue,
     private userService: UsersService,
     private jwtService: JwtService,
   ) {}
@@ -26,7 +27,9 @@ export class AuthService {
       /**
        * Send verify email confirmation
        */
-      this.verifyEmailClient.emit('verify_email', { email: newUser.email });
+      await this.verifyEmailQueue.add({
+        userToVerify: newUser,
+      });
 
       return {
         success: true,

@@ -10,7 +10,8 @@ import { AuthController } from './controllers/auth.controller';
 import config from 'src/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { KafkaModule } from 'src/kafka/kafka.module';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { BullModule } from '@nestjs/bull';
+import { VERIFY_EMAIL_QUEUE } from './constants';
 
 @Module({
   imports: [
@@ -28,24 +29,9 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
         };
       },
     }),
-    ClientsModule.registerAsync([
-      {
-        name: 'VERIFY_EMAIL_SERVICE',
-        inject: [config.KEY],
-        useFactory: (configService: ConfigType<typeof config>) => ({
-          transport: Transport.KAFKA,
-          options: {
-            client: {
-              clientId: 'verify-email',
-              brokers: [configService.kafka.broker],
-            },
-            consumer: {
-              groupId: 'verify-email-consumer',
-            },
-          },
-        }),
-      },
-    ]),
+    BullModule.registerQueue({
+      name: VERIFY_EMAIL_QUEUE,
+    }),
     KafkaModule,
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],

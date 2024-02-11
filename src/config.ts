@@ -15,5 +15,9 @@ export default registerAs('config', () => {
     kafka: {
       broker: process.env.KAFKA_BROKER,
     },
+    redis: {
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT,
+    },
   };
 });

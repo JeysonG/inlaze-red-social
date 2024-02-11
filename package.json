@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.2",
+    "@nestjs/bull": "^10.1.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^3.2.0",
     "@nestjs/core": "^9.0.0",
@@ -32,6 +33,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^7.3.0",
     "bcrypt": "^5.1.1",
+    "bull": "^4.12.2",
     "class-validator": "^0.14.1",
     "joi": "^17.12.1",
     "kafkajs": "^2.2.4",
