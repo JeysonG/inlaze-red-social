@@ -8,10 +8,9 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
-import { PayloadToken } from '../models/token.model';
 
 export interface CustomRequest extends Request {
-  decodedToken: PayloadToken;
+  token: string;
 }
 
 @Injectable()
@@ -29,8 +28,7 @@ export class JwtInterceptor implements NestInterceptor {
 
     if (!token) throw new UnauthorizedException('Not Allow');
 
-    const decodedToken = this.jwtService.verify(token);
-    req.decodedToken = decodedToken;
+    req.token = token;
 
     return next.handle();
   }

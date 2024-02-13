@@ -24,9 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   /* Return token data for use */
   async validate(payload: PayloadToken) {
-    const isBlackedList = await this.blacklistService.exist(payload.email);
-
-    if (isBlackedList || !payload.email || payload.email === '')
+    if (!payload.email || payload.email === '')
       throw new UnauthorizedException('Access Denied');
 
     const user = await this.userService.findByEmail(payload.email);

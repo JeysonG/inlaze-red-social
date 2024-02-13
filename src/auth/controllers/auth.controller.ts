@@ -48,6 +48,6 @@ export class AuthController {
   @UseInterceptors(JwtInterceptor)
   @Get('logout')
   logout(@Req() req: CustomRequest) {
-    return this.authService.logout(req.decodedToken);
+    return this.authService.logout(req.token);
   }
 }
