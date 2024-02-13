@@ -16,8 +16,19 @@ export class UsersService {
         {
           $lookup: {
             from: 'posts',
-            localField: '_id',
-            foreignField: 'userId',
+            let: { userId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$userId', '$$userId'] },
+                      { $eq: ['$deletedAt', null] },
+                    ],
+                  },
+                },
+              },
+            ],
             as: 'posts',
           },
         },
@@ -59,8 +70,19 @@ export class UsersService {
         {
           $lookup: {
             from: 'posts',
-            localField: '_id',
-            foreignField: 'userId',
+            let: { userId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ['$userId', '$$userId'] },
+                      { $eq: ['$deletedAt', null] },
+                    ],
+                  },
+                },
+              },
+            ],
             as: 'posts',
           },
         },

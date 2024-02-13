@@ -25,11 +25,16 @@ export class PostsService {
   async findAll(params?: FilterUsersDto) {
     try {
       const { limit, offset } = params;
+      const deletedAt = null;
 
       if (limit && offset)
-        return await this.postModel.find().skip(offset).limit(limit).exec();
+        return await this.postModel
+          .find({ deletedAt })
+          .skip(offset)
+          .limit(limit)
+          .exec();
 
-      return await this.postModel.find().exec();
+      return await this.postModel.find({ deletedAt }).exec();
     } catch (error) {
       throw new NotFoundException(`Cannot get posts ${error}`);
     }
@@ -37,12 +42,12 @@ export class PostsService {
 
   async findOne(_id: string) {
     try {
-      const model = await this.postModel.findById(_id);
+      const post = await this.postModel.find({ _id, deletedAt: null }).exec();
 
-      if (!model) throw new NotFoundException(`Post ${_id} not found`);
-      const post = model.toJSON();
+      if (!post || post.length === 0)
+        throw new NotFoundException(`Post ${_id} not found`);
 
-      return post;
+      return post[0];
     } catch (error) {
       throw new NotFoundException(`Cannot get post ${error}`);
     }
@@ -61,9 +66,15 @@ export class PostsService {
     }
   }
 
-  async remove(_id: string) {
+  async softDelete(_id: string) {
     try {
-      const post = await this.postModel.findByIdAndDelete(_id);
+      const now = new Date();
+
+      const post = await this.postModel.findByIdAndUpdate(
+        _id,
+        { deletedAt: now },
+        { new: true },
+      );
 
       if (!post) throw new NotFoundException(`Post ${_id} not found`);
       return post;

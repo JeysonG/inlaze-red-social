@@ -45,6 +45,6 @@ export class PostsController {
 
   @Delete(':_id')
   remove(@Param('_id') _id: string) {
-    return this.postsService.remove(_id);
+    return this.postsService.softDelete(_id);
   }
 }
