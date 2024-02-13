@@ -22,6 +22,7 @@ import { BullModule } from '@nestjs/bull';
 import { VerifyEmailQueueConsumer } from './verifyEmailQueue.consumer';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { VERIFY_EMAIL_SERVICE } from './auth/constants';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { VERIFY_EMAIL_SERVICE } from './auth/constants';
     AuthModule,
     UsersModule,
     KafkaModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [AppService, FakeMSConsumer, VerifyEmailQueueConsumer],
