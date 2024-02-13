@@ -19,5 +19,10 @@ export default registerAs('config', () => {
       host: process.env.REDIS_HOST,
       port: process.env.REDIS_PORT,
     },
+    mail: {
+      jwtSecret: process.env.JWT_VERIFICATION_SECRET,
+      from: process.env.MAIL_FROM,
+      url: process.env.EMAIL_CONFIRMATION_URL,
+    },
   };
 });
