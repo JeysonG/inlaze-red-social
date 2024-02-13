@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  Post,
   Body,
   Put,
   Delete,
@@ -12,7 +11,7 @@ import {
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 import { UsersService } from '../services/users.service';
-import { CreateUserDto, FilterUsersDto, UpdateUserDto } from '../dto/user.dto';
+import { FilterUsersDto, UpdateUserDto } from '../dto/user.dto';
 import { ApiKeyGuard } from 'src/auth/guards/api-key.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 

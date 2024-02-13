@@ -55,6 +55,7 @@ export class PostsService {
 
   async update(_id: string, updatePostDto: UpdatePostDto) {
     try {
+      updatePostDto.userId = new ObjectId(updatePostDto.userId);
       const post = await this.postModel
         .findByIdAndUpdate(_id, { $set: updatePostDto }, { new: true })
         .exec();

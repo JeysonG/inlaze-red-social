@@ -15,6 +15,7 @@ import { PostsService } from '../services/posts.service';
 import { CreatePostDto, FilterPostsDto, UpdatePostDto } from '../dto/post.dto';
 import { ApiKeyGuard } from 'src/auth/guards/api-key.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { OwnerGuard } from '../guards/owner.guard';
 
 @UseGuards(ApiKeyGuard)
 @UseGuards(JwtAuthGuard)
@@ -38,11 +39,13 @@ export class PostsController {
     return this.postsService.findOne(_id);
   }
 
+  @UseGuards(OwnerGuard)
   @Patch(':_id')
   update(@Param('_id') _id: string, @Body() updatePostDto: UpdatePostDto) {
     return this.postsService.update(_id, updatePostDto);
   }
 
+  @UseGuards(OwnerGuard)
   @Delete(':_id')
   remove(@Param('_id') _id: string) {
     return this.postsService.softDelete(_id);
