@@ -51,15 +51,39 @@ export class UsersService {
 
   async findOne(_id: string) {
     try {
-      const model = await this.userModel.findById(_id);
-
-      if (!model) throw new NotFoundException(`User ${_id} not found`);
-
-      const { password, ...user } = model.toJSON();
+      const user = await this.userModel.findById(_id).exec();
 
       if (!user) throw new NotFoundException(`User ${_id} not found`);
 
-      return user;
+      const result = await this.userModel.aggregate([
+        {
+          $lookup: {
+            from: 'posts',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'posts',
+          },
+        },
+        {
+          $match: {
+            _id: user._id,
+            deletedAt: null,
+          },
+        },
+        {
+          $project: {
+            password: 0,
+          },
+        },
+        {
+          $limit: 1,
+        },
+      ]);
+
+      if (result.length == 0)
+        throw new NotFoundException(`User ${_id} not found`);
+
+      return result[0];
     } catch (error) {
       throw new NotFoundException(`Cannot get user ${error}`);
     }
