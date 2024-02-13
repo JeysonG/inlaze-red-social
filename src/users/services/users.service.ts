@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 import { User } from '../entities/user.entity';
@@ -12,18 +12,33 @@ export class UsersService {
 
   async findAll(params?: FilterUsersDto) {
     try {
-      if (params) {
-        const filters: FilterQuery<User> = {};
-        const { limit, offset } = params;
+      const lookup = {
+        from: 'posts',
+        localField: '_id',
+        foreignField: 'userId',
+        as: 'posts',
+      };
+      const { limit, offset } = params;
 
-        return await this.userModel
-          .find(filters)
-          .skip(offset)
-          .limit(limit)
-          .exec();
+      if (limit && offset) {
+        return await this.userModel.aggregate([
+          {
+            $lookup: lookup,
+          },
+          {
+            $skip: offset,
+          },
+          {
+            $limit: limit,
+          },
+        ]);
       }
 
-      return await this.userModel.find().exec();
+      return await this.userModel.aggregate([
+        {
+          $lookup: lookup,
+        },
+      ]);
     } catch (error) {
       throw new NotFoundException(`Cannot get users ${error}`);
     }
