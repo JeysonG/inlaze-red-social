@@ -72,6 +72,26 @@ export class UsersService {
     }
   }
 
+  async markEmailAsVerified(email: string) {
+    try {
+      const user = await this.findByEmail(email);
+
+      if (user.isEmailVerified)
+        throw new NotFoundException('Email already verified');
+
+      user.isEmailVerified = true;
+
+      await user.save();
+
+      return {
+        success: true,
+        message: 'Email verified successfully',
+      };
+    } catch (error) {
+      throw new NotFoundException(`Cannot create user ${error}`);
+    }
+  }
+
   async update(_id: string, payload: UpdateUserDto) {
     try {
       const user = await this.userModel

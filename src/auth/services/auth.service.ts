@@ -11,6 +11,7 @@ import { PayloadToken } from '../models/token.model';
 import { VERIFY_EMAIL_QUEUE } from '../constants';
 import { ConfigType } from '@nestjs/config';
 import config from 'src/config';
+import VerifyEmailDto from '../dto/verifyEmail.dto';
 
 @Injectable()
 export class AuthService {
@@ -88,6 +89,30 @@ export class AuthService {
     });
 
     return verifyEmailToken;
+  }
+
+  async decodeVerifyEmailToken(token: string) {
+    try {
+      const payload = await this.jwtService.verify(token, {
+        secret: this.configService.mail.jwtSecret,
+      });
+
+      if (typeof payload === 'object' && 'email' in payload)
+        return payload.email;
+
+      throw new NotFoundException('Not Allow');
+    } catch (error) {
+      if (error?.name === 'TokenExpiredError')
+        throw new NotFoundException('Email verification token expired');
+
+      throw new NotFoundException('Bad verification token');
+    }
+  }
+
+  async verifyEmail(payload: VerifyEmailDto) {
+    const email = await this.decodeVerifyEmailToken(payload.token);
+
+    return await this.userService.markEmailAsVerified(email);
   }
 
   async logout() {
