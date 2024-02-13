@@ -6,12 +6,14 @@ import { ConfigType } from '@nestjs/config';
 import config from 'src/config';
 import { PayloadToken } from '../models/token.model';
 import { UsersService } from 'src/users/services/users.service';
+import { BlacklistService } from '../services/blacklist.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     @Inject(config.KEY) configService: ConfigType<typeof config>,
-    private userService: UsersService,
+    private readonly userService: UsersService,
+    private readonly blacklistService: BlacklistService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -22,7 +24,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   /* Return token data for use */
   async validate(payload: PayloadToken) {
-    if (!payload.email || payload.email === '')
+    const isBlackedList = await this.blacklistService.exist(payload.email);
+
+    if (isBlackedList || !payload.email || payload.email === '')
       throw new UnauthorizedException('Access Denied');
 
     const user = await this.userService.findByEmail(payload.email);

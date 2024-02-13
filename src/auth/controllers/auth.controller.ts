@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 
@@ -9,6 +17,7 @@ import { ApiKeyGuard } from '../guards/api-key.guard';
 import { CreateUserDto } from 'src/users/dto/user.dto';
 import { JwtVerifyEmailGuard } from '../guards/jwt-verify-email.guard';
 import VerifyEmailDto from '../dto/verifyEmail.dto';
+import { CustomRequest, JwtInterceptor } from '../interceptors/jwt.interceptor';
 
 @UseGuards(ApiKeyGuard)
 @Controller('auth')
@@ -34,8 +43,9 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(JwtInterceptor)
   @Get('logout')
-  logout() {
-    this.authService.logout();
+  logout(@Req() req: CustomRequest) {
+    return this.authService.logout(req.decodedToken);
   }
 }

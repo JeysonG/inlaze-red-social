@@ -12,6 +12,7 @@ import { VERIFY_EMAIL_QUEUE } from '../constants';
 import { ConfigType } from '@nestjs/config';
 import config from 'src/config';
 import VerifyEmailDto from '../dto/verifyEmail.dto';
+import { BlacklistService } from './blacklist.service';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,7 @@ export class AuthService {
     @Inject(config.KEY) private configService: ConfigType<typeof config>,
     private userService: UsersService,
     private jwtService: JwtService,
+    private blacklistService: BlacklistService,
   ) {}
 
   async signUp(payload: CreateUserDto) {
@@ -115,7 +117,8 @@ export class AuthService {
     return await this.userService.markEmailAsVerified(email);
   }
 
-  async logout() {
-    /* Logout user */
+  async logout(decodedToken: PayloadToken) {
+    await this.blacklistService.add(decodedToken.email);
+    return { success: true, message: 'Logout successful' };
   }
 }
