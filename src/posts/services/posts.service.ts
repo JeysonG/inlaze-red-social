@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { CreatePostDto, UpdatePostDto } from '../dto/post.dto';
@@ -26,15 +26,45 @@ export class PostsService {
     try {
       const { limit, offset } = params;
       const deletedAt = null;
+      let aggregate: PipelineStage[] = [
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        {
+          $match: {
+            deletedAt,
+          },
+        },
+        {
+          $project: {
+            title: 1,
+            content: 1,
+            userName: { $arrayElemAt: ['$user.fullName', 0] },
+            createdAt: 1,
+          },
+        },
+      ];
 
-      if (limit && offset)
-        return await this.postModel
-          .find({ deletedAt })
-          .skip(offset)
-          .limit(limit)
-          .exec();
+      if (limit && offset) {
+        aggregate = [
+          ...aggregate,
+          {
+            $skip: offset,
+          },
+          {
+            $limit: limit,
+          },
+        ];
 
-      return await this.postModel.find({ deletedAt }).exec();
+        return await this.postModel.aggregate(aggregate).exec();
+      }
+
+      return this.postModel.aggregate(aggregate).exec();
     } catch (error) {
       throw new NotFoundException(`Cannot get posts ${error}`);
     }
@@ -42,12 +72,44 @@ export class PostsService {
 
   async findOne(_id: string) {
     try {
-      const post = await this.postModel.find({ _id, deletedAt: null }).exec();
+      const post = await this.postModel.findById(_id).exec();
 
-      if (!post || post.length === 0)
+      if (!post) throw new NotFoundException(`Post ${_id} not found`);
+
+      const result = await this.postModel
+        .aggregate([
+          {
+            $lookup: {
+              from: 'users',
+              localField: 'userId',
+              foreignField: '_id',
+              as: 'user',
+            },
+          },
+          {
+            $match: {
+              _id: post._id,
+              deletedAt: null,
+            },
+          },
+          {
+            $project: {
+              title: 1,
+              content: 1,
+              userName: { $arrayElemAt: ['$user.fullName', 0] },
+              createdAt: 1,
+            },
+          },
+          {
+            $limit: 1,
+          },
+        ])
+        .exec();
+
+      if (!result || result.length === 0)
         throw new NotFoundException(`Post ${_id} not found`);
 
-      return post[0];
+      return result[0];
     } catch (error) {
       throw new NotFoundException(`Cannot get post ${error}`);
     }

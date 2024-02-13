@@ -51,10 +51,10 @@ export class UsersService {
           },
         ];
 
-        return await this.userModel.aggregate(aggregate);
+        return await this.userModel.aggregate(aggregate).exec();
       }
 
-      return await this.userModel.aggregate(aggregate);
+      return await this.userModel.aggregate(aggregate).exec();
     } catch (error) {
       throw new NotFoundException(`Cannot get users ${error}`);
     }
@@ -66,41 +66,43 @@ export class UsersService {
 
       if (!user) throw new NotFoundException(`User ${_id} not found`);
 
-      const result = await this.userModel.aggregate([
-        {
-          $lookup: {
-            from: 'posts',
-            let: { userId: '$_id' },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      { $eq: ['$userId', '$$userId'] },
-                      { $eq: ['$deletedAt', null] },
-                    ],
+      const result = await this.userModel
+        .aggregate([
+          {
+            $lookup: {
+              from: 'posts',
+              let: { userId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$userId', '$$userId'] },
+                        { $eq: ['$deletedAt', null] },
+                      ],
+                    },
                   },
                 },
-              },
-            ],
-            as: 'posts',
+              ],
+              as: 'posts',
+            },
           },
-        },
-        {
-          $match: {
-            _id: user._id,
-            deletedAt: null,
+          {
+            $match: {
+              _id: user._id,
+              deletedAt: null,
+            },
           },
-        },
-        {
-          $project: {
-            password: 0,
+          {
+            $project: {
+              password: 0,
+            },
           },
-        },
-        {
-          $limit: 1,
-        },
-      ]);
+          {
+            $limit: 1,
+          },
+        ])
+        .exec();
 
       if (result.length == 0)
         throw new NotFoundException(`User ${_id} not found`);
