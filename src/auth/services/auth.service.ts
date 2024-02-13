@@ -117,8 +117,8 @@ export class AuthService {
     return await this.userService.markEmailAsVerified(email);
   }
 
-  async logout(decodedToken: PayloadToken) {
-    await this.blacklistService.add(decodedToken.email);
+  async logout(token: string) {
+    await this.blacklistService.add(token);
     return { success: true, message: 'Logout successful' };
   }
 }

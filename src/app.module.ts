@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, RequestMethod } from '@nestjs/common';
 import { ConfigModule, ConfigType } from '@nestjs/config';
 import * as Joi from 'joi';
 
@@ -24,6 +24,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { VERIFY_EMAIL_SERVICE } from './auth/constants';
 import { PostsModule } from './posts/posts.module';
 import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { BlacklistMiddleware } from './middlewares/blacklist.middleware';
+import { BlacklistService } from './auth/services/blacklist.service';
 
 @Module({
   imports: [
@@ -86,6 +88,17 @@ import { RedisModule } from '@liaoliaots/nestjs-redis';
     PostsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, FakeMSConsumer, VerifyEmailQueueConsumer],
+  providers: [
+    AppService,
+    FakeMSConsumer,
+    VerifyEmailQueueConsumer,
+    BlacklistService,
+  ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(BlacklistMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
