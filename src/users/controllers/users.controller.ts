@@ -34,11 +34,6 @@ export class UsersController {
     return this.usersService.findOne(_id);
   }
 
-  @Post()
-  create(@Body() payload: CreateUserDto) {
-    return this.usersService.create(payload);
-  }
-
   @Put(':_id')
   update(@Param('_id') _id: string, @Body() payload: UpdateUserDto) {
     return this.usersService.update(_id, payload);
