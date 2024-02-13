@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
+import { ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from '../services/auth.service';
 import { User } from 'src/users/entities/user.entity';
@@ -20,6 +21,7 @@ import VerifyEmailDto from '../dto/verifyEmail.dto';
 import { CustomRequest, JwtInterceptor } from '../interceptors/jwt.interceptor';
 
 @UseGuards(ApiKeyGuard)
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
