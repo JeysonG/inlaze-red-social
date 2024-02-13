@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { FilterQuery, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { CreatePostDto, UpdatePostDto } from '../dto/post.dto';
 import { FilterUsersDto } from 'src/users/dto/user.dto';
 import { Post } from '../entities/post.entity';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class PostsService {
@@ -12,6 +13,7 @@ export class PostsService {
 
   async create(createPostDto: CreatePostDto) {
     try {
+      createPostDto.userId = new ObjectId(createPostDto.userId);
       const postModel = await new this.postModel(createPostDto);
       const post = await postModel.save();
       return post;
@@ -22,16 +24,10 @@ export class PostsService {
 
   async findAll(params?: FilterUsersDto) {
     try {
-      if (params) {
-        const filters: FilterQuery<Post> = {};
-        const { limit, offset } = params;
+      const { limit, offset } = params;
 
-        return await this.postModel
-          .find(filters)
-          .skip(offset)
-          .limit(limit)
-          .exec();
-      }
+      if (limit && offset)
+        return await this.postModel.find().skip(offset).limit(limit).exec();
 
       return await this.postModel.find().exec();
     } catch (error) {

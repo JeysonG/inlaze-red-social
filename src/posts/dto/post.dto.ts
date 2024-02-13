@@ -21,7 +21,7 @@ export class CreatePostDto {
 
   @IsNotEmpty()
   @IsMongoId()
-  readonly userId: Types.ObjectId;
+  userId: Types.ObjectId;
 }
 
 export class UpdatePostDto extends PartialType(CreatePostDto) {

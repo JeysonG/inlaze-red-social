@@ -26,7 +26,7 @@ export class Post extends Document {
 
   @ApiProperty({ description: 'User associated' })
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })
-  readonly userId: User | Types.ObjectId;
+  readonly userId: Types.ObjectId;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
