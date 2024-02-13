@@ -19,7 +19,7 @@ import { OwnerGuard } from '../guards/owner.guard';
 
 @UseGuards(ApiKeyGuard)
 @UseGuards(JwtAuthGuard)
-@ApiTags('users')
+@ApiTags('posts')
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
