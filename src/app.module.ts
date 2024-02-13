@@ -23,6 +23,7 @@ import { VerifyEmailQueueConsumer } from './verifyEmailQueue.consumer';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { VERIFY_EMAIL_SERVICE } from './auth/constants';
 import { PostsModule } from './posts/posts.module';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
 
 @Module({
   imports: [
@@ -47,7 +48,16 @@ import { PostsModule } from './posts/posts.module';
       useFactory: async (configService: ConfigType<typeof config>) => ({
         redis: {
           host: configService.redis.host,
-          port: Number(configService.redis.port),
+          port: parseInt(configService.redis.port),
+        },
+      }),
+    }),
+    RedisModule.forRootAsync({
+      inject: [config.KEY],
+      useFactory: async (configService: ConfigType<typeof config>) => ({
+        config: {
+          host: configService.redis.host,
+          port: parseInt(configService.redis.port),
         },
       }),
     }),

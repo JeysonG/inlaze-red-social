@@ -13,6 +13,7 @@ import { KafkaModule } from 'src/kafka/kafka.module';
 import { BullModule } from '@nestjs/bull';
 import { VERIFY_EMAIL_QUEUE } from './constants';
 import { VerifyEmailJwtStrategy } from './strategies/verify-email-jwt-strategy';
+import { BlacklistService } from './services/blacklist.service';
 
 @Module({
   imports: [
@@ -35,7 +36,13 @@ import { VerifyEmailJwtStrategy } from './strategies/verify-email-jwt-strategy';
     }),
     KafkaModule,
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, VerifyEmailJwtStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    VerifyEmailJwtStrategy,
+    BlacklistService,
+  ],
   controllers: [AuthController],
 })
 export class AuthModule {}
