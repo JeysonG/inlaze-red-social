@@ -46,6 +46,6 @@ export class UsersController {
 
   @Delete(':_id')
   remove(@Param('_id') _id: string) {
-    return this.usersService.remove(_id);
+    return this.usersService.softDelete(_id);
   }
 }

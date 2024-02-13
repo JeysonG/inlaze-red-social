@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 import { User } from '../entities/user.entity';
@@ -12,33 +12,38 @@ export class UsersService {
 
   async findAll(params?: FilterUsersDto) {
     try {
-      const lookup = {
-        from: 'posts',
-        localField: '_id',
-        foreignField: 'userId',
-        as: 'posts',
-      };
+      let aggregate: PipelineStage[] = [
+        {
+          $lookup: {
+            from: 'posts',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'posts',
+          },
+        },
+        {
+          $match: {
+            deletedAt: null,
+          },
+        },
+      ];
       const { limit, offset } = params;
 
       if (limit && offset) {
-        return await this.userModel.aggregate([
-          {
-            $lookup: lookup,
-          },
+        aggregate = [
+          ...aggregate,
           {
             $skip: offset,
           },
           {
             $limit: limit,
           },
-        ]);
+        ];
+
+        return await this.userModel.aggregate(aggregate);
       }
 
-      return await this.userModel.aggregate([
-        {
-          $lookup: lookup,
-        },
-      ]);
+      return await this.userModel.aggregate(aggregate);
     } catch (error) {
       throw new NotFoundException(`Cannot get users ${error}`);
     }
@@ -120,9 +125,15 @@ export class UsersService {
     }
   }
 
-  async remove(_id: string) {
+  async softDelete(_id: string) {
     try {
-      const user = await this.userModel.findByIdAndDelete(_id);
+      const now = new Date();
+
+      const user = await this.userModel.findByIdAndUpdate(
+        _id,
+        { deletedAt: now },
+        { new: true },
+      );
 
       if (!user) throw new NotFoundException(`User ${_id} not found`);
       return user;
